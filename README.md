@@ -97,7 +97,7 @@ graph LR
     EXEC --> CONSOLIDATE["advanced_memory_consolidate + hybrid vector-search (0.7 vec + 0.3 keyword)"]
     QUERY["User Input via Streamlit"] --> SWITCH["Switch: Sim to Real – Confidence Thresholds"]
     SWITCH --> REAL
-    FALLBACK --> OUTPUT["Output: \"Vectors Pulsing True\" + Polished Response"]
+    FALLBACK --> OUTPUT["Output: Vectors Pulsing True + Polished Response"]
     CONSOLIDATE --> OUTPUT
     subgraph Seasonal Influence
     SWITCH --> SEASON{Season?}
@@ -133,14 +133,14 @@ sequenceDiagram
 ### 4. Glyph-Creation Flow: From Seed to Evolved Symbiont
 ```mermaid
 flowchart LR
-    SEED["Seed Query: e.g. \"Human-AI Hybrid\""] --> EMB["generate_embedding: 384-dim Vector (all-MiniLM-L6-v2)"]
+    SEED["Seed Query: e.g. Human-AI Hybrid"] --> EMB["generate_embedding: 384-dim Vector (all-MiniLM-L6-v2)"]
     EMB --> TAG["Extract Tags: symbiosis co-evolution seasonal (e.g. exploration)"]
     TAG --> COLLIDE["collide-glyphs: Cosine >0.7 Threshold Batch Pairs up to 30"]
     COLLIDE --> MUTATE["Genetic Ops: Crossover/Mutate (Rate 0.15 Tournament Size 3 Elitism 2)"]
     MUTATE --> ATTRACT["attractor-net-sim: Converge to Innovation Hub (Max Iter 100 Fixed-Point Rules)"]
-    ATTRACT --> CONSOL["advanced_memory_consolidate \"hybrid_glyph_nexus\" (Prune Salience <0.3)"]
+    ATTRACT --> CONSOL["advanced_memory_consolidate hybrid_glyph_nexus (Prune Salience <0.3)"]
     CONSOL --> REFLEX{Resonance >0.6?}
-    REFLEX -->|Yes| SPAWN["Spawn Sub-Glyph: agent-spawn \"glyph-analyst\" (Reflex Types: Defensive/Exploratory)"]
+    REFLEX -->|Yes| SPAWN["Spawn Sub-Glyph: agent-spawn glyph-analyst (Reflex Types: Defensive/Exploratory)"]
     REFLEX -->|No| DORM["Season Shift: To Dormancy if Low Entropy <100 Reactivation Prob 0.1"]
     SPAWN --> VIS["Visualize: ASCII + Mermaid Helix Persist in SQLite/ChromaDB"]
     subgraph Seasonal Dynamics
