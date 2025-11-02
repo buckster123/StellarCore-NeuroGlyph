@@ -86,3 +86,144 @@ flowchart TD
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style K fill:#bbf,stroke:#333,stroke-width:2px
     style M fill:#dfd,stroke:#333
+```
+
+### 2. Sim-Flow vs Real-Flow: Hypothetical to Grounded Execution
+```mermaid
+graph LR
+    SIM[Internal Sims: _simulate-code-run, _swarm-spawn, _attractor-net-sim] -->|Hypothetical/Low Confidence <0.7| VERIFY[_verify-no-bleed + Error Escalation]
+    VERIFY -->|Clean| FALLBACK[Sim Fallback: 10% Cap – _simulate-council-fallback]
+    REAL[Real Tools: batch-real-tools (fs ops, code-execution, lisp-execution)] -->|High Confidence/Grounding >0.75| EXEC[Execute: In Venv/Isolated Subprocess]
+    EXEC --> CONSOLIDATE[advanced_memory_consolidate + hybrid vector-search (0.7 vec + 0.3 keyword)]
+    QUERY[User Input via Streamlit] --> SWITCH[Switch: Sim to Real – Confidence Thresholds]
+    SWITCH --> REAL
+    FALLBACK --> OUTPUT[Output: "Vectors Pulsing True" + Polished Response]
+    CONSOLIDATE --> OUTPUT
+    subgraph Seasonal Influence
+    SWITCH --> SEASON{Season?}
+    SEASON -->|Exploration| EXP[Boost Novelty Checks]
+    SEASON -->|Consolidation| CON[Enhance Attractors]
+    EXP --> SWITCH
+    CON --> SWITCH
+    end
+    style REAL fill:#4CAF50,stroke:#333
+    style SIM fill:#FFEB3B,stroke:#333
+    style SEASON fill:#2196F3,stroke:#333
+```
+
+### 3. Tool-Use Pipeline: Batch Invocation and Efficiency
+```mermaid
+sequenceDiagram
+    participant U as User (Streamlit UI)
+    participant C as StellarCore Agent
+    participant T as Tools (20+: fs ops, code-execution, glyph-control)
+    participant M as Memory (ChromaDB + SQLite)
+    U->>C: Query (e.g., "Manifest Glyph")
+    C->>C: Estimate Complexity (>0.6? Debate/Swarm)
+    C->>T: batch-real-tools [List: generate_embedding, fs_mkdir, lisp-execution; Max Batch: 20]
+    Note over T: Parallel Execution; Validate Responses; Venv for Isolation
+    T-->>C: Results [Vectors, Files, Outputs]
+    C->>M: advanced_memory_consolidate "query_uuid" (Hybrid Weights: 0.7 vec + 0.3 keyword)
+    M-->>C: Consolidated [Embed + Summary + Salience]
+    C->>C: Genetic Evolve if Metrics Low (Elitism: 2, Crossover: Two-Point)
+    C-->>U: Output [Glyph/Workflow + Markdown Render]
+    Note over C,U: Error Escalation to Logs if Recurrent (>5); Birth New Modules
+```
+
+### 4. Glyph-Creation Flow: From Seed to Evolved Symbiont
+```mermaid
+flowchart LR
+    SEED[Seed Query: e.g., "Human-AI Hybrid"] --> EMB[generate_embedding: 384-dim Vector (all-MiniLM-L6-v2)]
+    EMB --> TAG[Extract Tags: symbiosis, co-evolution, seasonal (e.g., exploration)]
+    TAG --> COLLIDE[collide-glyphs: Cosine >0.7 Threshold; Batch Pairs up to 30]
+    COLLIDE --> MUTATE[Genetic Ops: Crossover/Mutate (Rate 0.15, Tournament Size 3, Elitism 2)]
+    MUTATE --> ATTRACT[attractor-net-sim: Converge to Innovation Hub (Max Iter 100, Fixed-Point Rules)]
+    ATTRACT --> CONSOL[advanced_memory_consolidate "hybrid_glyph_nexus" (Prune Salience <0.3)]
+    CONSOL --> REFLEX{Resonance >0.6?}
+    REFLEX -->|Yes| SPAWN[Spawn Sub-Glyph: agent-spawn "glyph-analyst" (Reflex Types: Defensive/Exploratory)]
+    REFLEX -->|No| DORM[Season Shift: To Dormancy if Low Entropy <100; Reactivation Prob 0.1]
+    SPAWN --> VIS[Visualize: ASCII + Mermaid Helix; Persist in SQLite/ChromaDB]
+    subgraph Seasonal Dynamics
+    MUTATE --> PHASE{Season Phase?}
+    PHASE -->|Exploration| EXP[High Mutation Rate 0.2 + Novelty Bonus]
+    PHASE -->|Consolidation| CON[Strengthen Attractors + Influence Calc]
+    PHASE -->|Dormancy| DOR[Prune Stagnant >250 Gens + Low Keep Prob 0.025]
+    PHASE -->|Renaissance| REN[Boost Reactivation + Tag Diversity]
+    EXP --> MUTATE
+    CON --> MUTATE
+    DOR --> MUTATE
+    REN --> MUTATE
+    end
+    style SEED fill:#FFEB3B,stroke:#F44336,stroke-width:2px
+    style VIS fill:#A5D6A7,stroke:#4CAF50,stroke-width:2px
+    style PHASE fill:#BBDEFB,stroke:#2196F3
+```
+
+## Insights and Usage
+
+StellarCore-NeuroGlyph balances creativity (70% neural fusion) with stability (30% symbolic rules), decomposing tasks, debating alternatives, and manifesting via grounded tools. The Glyph Engine adds emergent innovation, evolving semantic clusters that influence agent behavior. Deploy via the NeuroGlyph backend for interactive chats, or integrate the bootstrap for custom agents.
+
+**Best Practices:**  
+- Start with `init the system` to populate sandboxes.  
+- Use tools sparingly; confirm writes.  
+- Monitor glyph seasons for performance tuning.  
+- Evolve modules via genetic ops for inefficiency.  
+
+**Limitations:** Sandboxed (no internet installs); API-dependent for councils.  
+
+Fork and contribute—evolve the framework. Contact maintainer André for collaborations.  
+
+## Installation Guide (Raspberry Pi 5 + Raspberry OS Bookworm)
+
+This guide assumes a fresh Raspberry OS Bookworm installation on Pi 5. Run as non-root user.
+
+1. **Update System and Install Dependencies:**  
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   sudo apt install build-essential python3-dev libatlas-base-dev gfortran libgit2-dev pkg-config libffi-dev cmake -y
+   ```
+
+2. **Create Virtual Environment:**  
+   ```bash
+   python3 -m venv NeuroGlyph
+   source NeuroGlyph/bin/activate
+   ```
+
+3. **Install PyTorch (CPU Version for Pi):**  
+   ```bash
+   pip install torch --index-url https://download.pytorch.org/whl/cpu
+   ```
+
+4. **Install Python Packages:**  
+   ```bash
+   pip install numpy scipy networkx scikit-learn sentence-transformers chromadb pygit2 streamlit openai black jsbeautifier ntplib passlib tiktoken beautifulsoup4 sqlparse requests pyyaml python-dotenv
+   ```
+
+5. **Set Environment Variables:**  
+   Create `.env` in the project root:  
+   ```
+   XAI_API_KEY=your_xai_api_key_here
+   LANGSEARCH_API_KEY=your_langsearch_api_key_here  # Optional for web search
+   ```
+
+6. **Run the Backend:**  
+   ```bash
+   streamlit run backend.py
+   ```
+   Access at `http://localhost:8501` (or Pi's IP). Register/login to start chatting.
+
+7. **Bootstrap Initialization:**  
+   The agent auto-inits on first query. For manual testing, invoke tools via chat (enable in sidebar).
+
+**Troubleshooting:**  
+- If embeddings fail, check SentenceTransformer model download.  
+- For Pi-specific issues (e.g., ARM), ensure CPU PyTorch variant.  
+- Logs in `./glyph_data/` and `./sandbox/`.
+
+## Contributing
+
+Pull requests welcome! Focus on tool expansions, glyph optimizations, or Pi optimizations. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.
