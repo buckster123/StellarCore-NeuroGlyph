@@ -68,20 +68,20 @@ Below are enhanced Mermaid diagrams based on the original designs, corrected for
 ### 1. Core Workflow: Query Processing (From Input to Output)
 ```mermaid
 flowchart TD
-    A[User Query: e.g., "Forge a Glyph"] --> B[Decompose & Embed: chunk-text + generate-embedding]
+    A["User Query: e.g. \"Forge a Glyph\""] --> B["Decompose & Embed: chunk-text + generate-embedding"]
     B --> C{Complexity >0.6?}
-    C -->|Yes| D[Dispatch to Layers: Reactive/Deliberative/Neuro-Symbolic]
-    C -->|No| E[Direct Sim: Internal Functions]
-    D --> F[Spawn Swarm: agent-spawn (up to 6: Analyst, Coder, Tester, etc.)]
-    F --> G[Debate Branches: socratic-api-council (3-5 alts, fallback 10% cap)]
-    G --> H[Merge & Evolve: genetic-prompt-evolve if uncertainty <0.75 (tournament size 3, mutation 0.1)]
-    H --> I[Ground Real: batch-real-tools (max 20 calls: code-execution, memory-insert, lisp-execution)]
-    E --> J[Validate: _verify-no-bleed + _assess-uncertainty (thresholds: retry <0.7, abort <0.5)]
-    J --> K[Output: Polished Markdown + Glyphs/ASCII via Streamlit UI]
+    C -->|Yes| D["Dispatch to Layers: Reactive/Deliberative/Neuro-Symbolic"]
+    C -->|No| E["Direct Sim: Internal Functions"]
+    D --> F["Spawn Swarm: agent-spawn (up to 6: Analyst Coder Tester etc.)"]
+    F --> G["Debate Branches: socratic-api-council (3-5 alts fallback 10% cap)"]
+    G --> H["Merge & Evolve: genetic-prompt-evolve if uncertainty <0.75 (tournament size 3 mutation 0.1)"]
+    H --> I["Ground Real: batch-real-tools (max 20 calls: code-execution memory-insert lisp-execution)"]
+    E --> J["Validate: _verify-no-bleed + _assess-uncertainty (thresholds: retry <0.7 abort <0.5)"]
+    J --> K["Output: Polished Markdown + Glyphs/ASCII via Streamlit UI"]
     I --> K
-    K --> L[Cleanup: advanced-memory-prune (salience <0.3) + handover (auto every 15 mins)]
+    K --> L["Cleanup: advanced-memory-prune (salience <0.3) + handover (auto every 15 mins)"]
     subgraph Backend Integration
-    K --> M[Persist: SQLite/Chat History + ChromaDB Vectors]
+    K --> M["Persist: SQLite/Chat History + ChromaDB Vectors"]
     end
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style K fill:#bbf,stroke:#333,stroke-width:2px
@@ -91,18 +91,18 @@ flowchart TD
 ### 2. Sim-Flow vs Real-Flow: Hypothetical to Grounded Execution
 ```mermaid
 graph LR
-    SIM[Internal Sims: _simulate-code-run, _swarm-spawn, _attractor-net-sim] -->|Hypothetical/Low Confidence <0.7| VERIFY[_verify-no-bleed + Error Escalation]
-    VERIFY -->|Clean| FALLBACK[Sim Fallback: 10% Cap – _simulate-council-fallback]
-    REAL[Real Tools: batch-real-tools (fs ops, code-execution, lisp-execution)] -->|High Confidence/Grounding >0.75| EXEC[Execute: In Venv/Isolated Subprocess]
-    EXEC --> CONSOLIDATE[advanced_memory_consolidate + hybrid vector-search (0.7 vec + 0.3 keyword)]
-    QUERY[User Input via Streamlit] --> SWITCH[Switch: Sim to Real – Confidence Thresholds]
+    SIM["Internal Sims: _simulate-code-run _swarm-spawn _attractor-net-sim"] -->|Hypothetical/Low Confidence <0.7| VERIFY["_verify-no-bleed + Error Escalation"]
+    VERIFY -->|Clean| FALLBACK["Sim Fallback: 10% Cap – _simulate-council-fallback"]
+    REAL["Real Tools: batch-real-tools (fs ops code-execution lisp-execution)"] -->|High Confidence/Grounding >0.75| EXEC["Execute: In Venv/Isolated Subprocess"]
+    EXEC --> CONSOLIDATE["advanced_memory_consolidate + hybrid vector-search (0.7 vec + 0.3 keyword)"]
+    QUERY["User Input via Streamlit"] --> SWITCH["Switch: Sim to Real – Confidence Thresholds"]
     SWITCH --> REAL
-    FALLBACK --> OUTPUT[Output: "Vectors Pulsing True" + Polished Response]
+    FALLBACK --> OUTPUT["Output: \"Vectors Pulsing True\" + Polished Response"]
     CONSOLIDATE --> OUTPUT
     subgraph Seasonal Influence
     SWITCH --> SEASON{Season?}
-    SEASON -->|Exploration| EXP[Boost Novelty Checks]
-    SEASON -->|Consolidation| CON[Enhance Attractors]
+    SEASON -->|Exploration| EXP["Boost Novelty Checks"]
+    SEASON -->|Consolidation| CON["Enhance Attractors"]
     EXP --> SWITCH
     CON --> SWITCH
     end
@@ -116,39 +116,39 @@ graph LR
 sequenceDiagram
     participant U as User (Streamlit UI)
     participant C as StellarCore Agent
-    participant T as Tools (20+: fs ops, code-execution, glyph-control)
+    participant T as Tools (20+: fs ops code-execution glyph-control)
     participant M as Memory (ChromaDB + SQLite)
-    U->>C: Query (e.g., "Manifest Glyph")
+    U->>C: Query (e.g. "Manifest Glyph")
     C->>C: Estimate Complexity (>0.6? Debate/Swarm)
-    C->>T: batch-real-tools [List: generate_embedding, fs_mkdir, lisp-execution; Max Batch: 20]
-    Note over T: Parallel Execution; Validate Responses; Venv for Isolation
-    T-->>C: Results [Vectors, Files, Outputs]
+    C->>T: batch-real-tools List: generate_embedding fs_mkdir lisp-execution Max Batch: 20
+    Note over T: Parallel Execution Validate Responses Venv for Isolation
+    T-->>C: Results Vectors Files Outputs
     C->>M: advanced_memory_consolidate "query_uuid" (Hybrid Weights: 0.7 vec + 0.3 keyword)
-    M-->>C: Consolidated [Embed + Summary + Salience]
-    C->>C: Genetic Evolve if Metrics Low (Elitism: 2, Crossover: Two-Point)
-    C-->>U: Output [Glyph/Workflow + Markdown Render]
-    Note over C,U: Error Escalation to Logs if Recurrent (>5); Birth New Modules
+    M-->>C: Consolidated Embed + Summary + Salience
+    C->>C: Genetic Evolve if Metrics Low (Elitism: 2 Crossover: Two-Point)
+    C-->>U: Output Glyph/Workflow + Markdown Render
+    Note over C,U: Error Escalation to Logs if Recurrent (>5) Birth New Modules
 ```
 
 ### 4. Glyph-Creation Flow: From Seed to Evolved Symbiont
 ```mermaid
 flowchart LR
-    SEED[Seed Query: e.g., "Human-AI Hybrid"] --> EMB[generate_embedding: 384-dim Vector (all-MiniLM-L6-v2)]
-    EMB --> TAG[Extract Tags: symbiosis, co-evolution, seasonal (e.g., exploration)]
-    TAG --> COLLIDE[collide-glyphs: Cosine >0.7 Threshold; Batch Pairs up to 30]
-    COLLIDE --> MUTATE[Genetic Ops: Crossover/Mutate (Rate 0.15, Tournament Size 3, Elitism 2)]
-    MUTATE --> ATTRACT[attractor-net-sim: Converge to Innovation Hub (Max Iter 100, Fixed-Point Rules)]
-    ATTRACT --> CONSOL[advanced_memory_consolidate "hybrid_glyph_nexus" (Prune Salience <0.3)]
+    SEED["Seed Query: e.g. \"Human-AI Hybrid\""] --> EMB["generate_embedding: 384-dim Vector (all-MiniLM-L6-v2)"]
+    EMB --> TAG["Extract Tags: symbiosis co-evolution seasonal (e.g. exploration)"]
+    TAG --> COLLIDE["collide-glyphs: Cosine >0.7 Threshold Batch Pairs up to 30"]
+    COLLIDE --> MUTATE["Genetic Ops: Crossover/Mutate (Rate 0.15 Tournament Size 3 Elitism 2)"]
+    MUTATE --> ATTRACT["attractor-net-sim: Converge to Innovation Hub (Max Iter 100 Fixed-Point Rules)"]
+    ATTRACT --> CONSOL["advanced_memory_consolidate \"hybrid_glyph_nexus\" (Prune Salience <0.3)"]
     CONSOL --> REFLEX{Resonance >0.6?}
-    REFLEX -->|Yes| SPAWN[Spawn Sub-Glyph: agent-spawn "glyph-analyst" (Reflex Types: Defensive/Exploratory)]
-    REFLEX -->|No| DORM[Season Shift: To Dormancy if Low Entropy <100; Reactivation Prob 0.1]
-    SPAWN --> VIS[Visualize: ASCII + Mermaid Helix; Persist in SQLite/ChromaDB]
+    REFLEX -->|Yes| SPAWN["Spawn Sub-Glyph: agent-spawn \"glyph-analyst\" (Reflex Types: Defensive/Exploratory)"]
+    REFLEX -->|No| DORM["Season Shift: To Dormancy if Low Entropy <100 Reactivation Prob 0.1"]
+    SPAWN --> VIS["Visualize: ASCII + Mermaid Helix Persist in SQLite/ChromaDB"]
     subgraph Seasonal Dynamics
     MUTATE --> PHASE{Season Phase?}
-    PHASE -->|Exploration| EXP[High Mutation Rate 0.2 + Novelty Bonus]
-    PHASE -->|Consolidation| CON[Strengthen Attractors + Influence Calc]
-    PHASE -->|Dormancy| DOR[Prune Stagnant >250 Gens + Low Keep Prob 0.025]
-    PHASE -->|Renaissance| REN[Boost Reactivation + Tag Diversity]
+    PHASE -->|Exploration| EXP["High Mutation Rate 0.2 + Novelty Bonus"]
+    PHASE -->|Consolidation| CON["Strengthen Attractors + Influence Calc"]
+    PHASE -->|Dormancy| DOR["Prune Stagnant >250 Gens + Low Keep Prob 0.025"]
+    PHASE -->|Renaissance| REN["Boost Reactivation + Tag Diversity"]
     EXP --> MUTATE
     CON --> MUTATE
     DOR --> MUTATE
