@@ -28,6 +28,7 @@ import pygit2
 import requests
 import sqlparse
 import streamlit as st
+import streamlit.components.v1 as components
 import tiktoken
 import builtins
 import venv  # Added for venv support
@@ -41,6 +42,22 @@ import networkx as nx
 from scipy.spatial.distance import cosine
 from sklearn.cluster import MiniBatchKMeans
 import threading
+import tqdm
+import ecdsa
+import pandas as pd
+import matplotlib.pyplot as plt
+import sympy
+import mpmath
+import statsmodels.api as sm
+import pulp
+import Bio  # biopython
+import pubchempy
+import dendropy
+import pygame
+import chess
+import mido
+from midiutil import MIDIFile
+import snappy
 
 load_dotenv()
 API_KEY = os.getenv("XAI_API_KEY")
@@ -118,8 +135,6 @@ fs_read_file(file_path): Read and return the content of a file in the sandbox (e
 fs_write_file(file_path, content): Write the provided content to a file in the sandbox (e.g., 'subdir/newfile.txt'). Use for saving or updating files. Supports relative paths.
 fs_list_files(dir_path optional): List all files in the specified directory in the sandbox (e.g., 'subdir'; default root). Use to check available files.
 fs_mkdir(dir_path): Create a new directory in the sandbox (e.g., 'subdir/newdir'). Supports nested paths. Use to organize files.
-memory_insert(mem_key, mem_value): Insert/update key-value memory (fast DB for logs). mem_value as dict.
-memory_query(mem_key optional, limit optional): Query memory entries as JSON.
 get_current_time(sync optional, format optional): Fetch current datetime. sync: true for NTP, false for local. format: 'iso', 'human', 'json'.
 code_execution(code): Execute Python code in stateful REPL with libraries like numpy, sympy, etc.
 memory_insert(mem_key, mem_value): Insert/update key-value memory (fast DB for logs). mem_value as dict.
@@ -190,10 +205,53 @@ body {
     color: #00ff00;
     font-family: 'Courier New', monospace;
 }
+div[class*="stMarkdown"] pre {
+  position: relative;
+}
+.copy-btn {
+    background-color: #00ff00;
+    color: #000000;
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-size: 12px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border: none;
+    cursor: pointer;
+}
 </style>
 """,
     unsafe_allow_html=True,
 )
+components.html("""
+<script>
+window.addEventListener('load', () => {
+  const observer = new MutationObserver(() => {
+    const preElements = parent.document.querySelectorAll('pre');
+    preElements.forEach((pre) => {
+      if (!pre.querySelector('button.copy-btn')) {
+        const button = parent.document.createElement('button');
+        button.className = 'copy-btn';
+        button.textContent = 'Copy';
+        button.onclick = () => {
+          const code = pre.querySelector('code') ? pre.querySelector('code').innerText : pre.innerText;
+          navigator.clipboard.writeText(code).then(() => {
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+              button.textContent = 'Copy';
+            }, 2000);
+          });
+        };
+        pre.style.position = 'relative';
+        pre.appendChild(button);
+      }
+    });
+  });
+  observer.observe(parent.document.body, { childList: true, subtree: true });
+});
+</script>
+""", height=0)
 # Helper Functions
 def hash_password(password):
     return sha256_crypt.hash(password)
@@ -311,7 +369,28 @@ SAFE_BUILTINS = {
 # Enhanced with more libraries available
 ADDITIONAL_LIBS = {
     'numpy': np,
-    # Add more as needed, e.g., 'sympy': sympy, but since not imported, assume user imports in code
+    'pd': pd,
+    'plt': plt,
+    'sympy': sympy,
+    'mpmath': mpmath,
+    'sm': sm,
+    'pulp': pulp,
+    'Bio': Bio,
+    'pubchempy': pubchempy,
+    'dendropy': dendropy,
+    'pygame': pygame,
+    'chess': chess,
+    'mido': mido,
+    'MIDIFile': MIDIFile,
+    'snappy': snappy,
+    'tqdm': tqdm,
+    'ecdsa': ecdsa,
+    'subprocess': subprocess,
+    'shlex': shlex,
+    'time': time,
+    'math': math,
+    'random': random,
+    'os': os,  # Added cautiously for sandboxed ops
 }
 def code_execution(code: str, venv_path: str = None) -> str:
     """Execute Python code safely in a stateful REPL, optionally in a venv."""
@@ -684,17 +763,24 @@ def db_query(db_path: str, query: str, params: list = None) -> str:
         return f"DB error: {e}"
     finally:
         db_conn.close()
+def check_command_safe(command: str) -> bool:
+    parts = command.split('|')
+    for part in parts:
+        cmd_parts = shlex.split(part.strip())
+        if not cmd_parts or cmd_parts[0] not in whitelist:
+            return False
+    return True
+whitelist = ["ls", "grep", "sed", "awk", "cat", "echo", "wc", "tail", "head", "find", "sort", "uniq", "cut", "tee", "tr", "bc", "expr", "mkdir", "rm", "cp", "mv", "touch"]
 def shell_exec(command: str) -> str:
     """Run whitelisted shell commands in sandbox."""
-    whitelist = ["ls", "grep", "sed", "awk", "cat", "echo", "wc", "tail", "head"]
-    cmd_parts = shlex.split(command)
-    if cmd_parts[0] not in whitelist:
-        return "Error: Command not whitelisted."
-    try:
-        result = subprocess.run(cmd_parts, cwd=SANDBOX_DIR, capture_output=True, text=True, timeout=10)
-        return result.stdout if result.returncode == 0 else f"Error: {result.stderr}"
-    except Exception as e:
-        return f"Shell error: {e}"
+    if check_command_safe(command):
+        try:
+            result = subprocess.run(command, shell=True, cwd=SANDBOX_DIR, capture_output=True, text=True, timeout=10)
+            return result.stdout if result.returncode == 0 else f"Error: {result.stderr}"
+        except Exception as e:
+            return f"Shell error: {e}"
+    else:
+        return "Error: Command not whitelisted or unsafe."
 def code_lint(language: str, code: str) -> str:
     """Lint and format code for various languages."""
     lang_lower = language.lower()
@@ -1042,7 +1128,7 @@ class GlyphEngine:
         self.REACTIVATION_PROBABILITY = 0.1
         self.generation_count = 0
         self.current_season = GlyphEngine.SeasonalPhase.EXPLORATION
-        self.season_duration = 1000
+        self.season_duration = 100
         self.season_counter = 0
         self.id_lock = threading.Lock()
         self.log_lock = threading.Lock()
@@ -1817,7 +1903,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "socratic_api_council",
-            "description": "Run a BTIL/MAD-enhanced Socratic Council with multiple personas (Planner, Critic, Executor, Summarizer, Verifier, Moderator) via xAI API for debate and consensus.",
+            "description": "Run a Socratic Council with multiple personas (Planner, Critic, Executor, Summarizer, Verifier, Moderator) via xAI API for debate and consensus.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -2108,7 +2194,7 @@ def call_xai_api(
     return generate(api_messages)
 # Login Page
 def login_page():
-    st.title("Welcome to The Apex Orchestrator Interface")
+    st.title("Welcome to The StellarCore Interface")
     tab1, tab2 = st.tabs(["Login", "Register"])
     with tab1:
         with st.form("login_form"):
@@ -2160,7 +2246,7 @@ def delete_history(convo_id):
         st.session_state["current_convo_id"] = 0
     st.rerun()
 def chat_page():
-    st.title(f"Apex Chat - {st.session_state['user']}")
+    st.title(f"Stellar Chat - {st.session_state['user']}")
     # --- Sidebar UI ---
     with st.sidebar:
         st.header("Chat Settings")
