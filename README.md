@@ -63,8 +63,6 @@ This framework transcends static AI: It mutates prompts via GA, spawns reflexes 
 
 ## Visual Workflows
 
-Below are enhanced Mermaid diagrams based on the original designs, corrected for syntax (e.g., proper node connections, style fills), and expanded with details from the full bootstrap and backend analysis. Improvements include: added nodes for genetic evolution, glyph seasons, backend integration (e.g., Streamlit UI, ChromaDB), tool batching limits, and error handling paths. Diagrams now convey more info, such as thresholds, seasonal influences, and hybrid search weights.
-
 ### 1. Core Workflow: Query Processing (From Input to Output)
 ```mermaid
 flowchart TD
